@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVENTUM — Шаралар мен билеттер порталы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --accent: #0066FF; 
+            --dark: #0f172a;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --gray: #64748b;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; transition: 0.3s ease; }
+        body { font-family: 'Manrope', sans-serif; margin: 0; background-color: var(--bg); color: var(--dark); line-height: 1.6; }
+
+        /* HEADER */
+        header { background: var(--white); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #e2e8f0; }
+        .nav-main { display: flex; align-items: center; justify-content: space-between; padding: 12px 5%; max-width: 1400px; margin: 0 auto; gap: 20px; }
+        
+        .logo { font-weight: 800; font-size: 26px; text-decoration: none; color: var(--dark); letter-spacing: -1px; }
+        .logo span { color: var(--accent); }
+
+        .search-container { flex-grow: 1; position: relative; max-width: 450px; }
+        .search-container input {
+            width: 100%; padding: 12px 45px; border-radius: 12px;
+            border: 1.5px solid #e2e8f0; background: #f1f5f9; outline: none; font-size: 14px;
+        }
+        .search-container i { position: absolute; left: 15px; top: 15px; color: var(--gray); }
+
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        
+        .city-select { 
+            cursor: pointer; color: var(--accent); background: #f0f7ff; 
+            padding: 10px 18px; border-radius: 12px; display: flex; 
+            align-items: center; gap: 8px; font-weight: 700; font-size: 14px;
+        }
+
+        .action-icon { font-size: 22px; cursor: pointer; color: var(--dark); position: relative; }
+        .action-icon:hover { color: var(--accent); }
+
+        /* MODALS & SIDEBAR */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px); display: none; justify-content: center;
+            align-items: center; z-index: 9000;
+        }
+        .modal { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+
+        .side-menu {
+            position: fixed; top: 0; right: -350px; width: 320px; height: 100%;
+            background: white; z-index: 9500; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.05); padding: 40px 30px;
+        }
+        .side-menu.active { right: 0; }
+
+        /* CARDS */
+        .nav-sub { display: flex; justify-content: center; gap: 30px; padding: 15px; background: #fff; overflow-x: auto; border-bottom: 1px solid #f1f5f9; }
+        .cat-item { color: var(--gray); font-weight: 700; font-size: 14px; cursor: pointer; white-space: nowrap; padding-bottom: 5px; }
+        .cat-item.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; padding: 40px 5%; max-width: 1400px; margin: 0 auto; }
+        .card { 
+            background: #fff; border-radius: 24px; overflow: hidden; 
+            border: 1px solid #f1f5f9; transition: transform 0.3s; 
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .card-img { width: 100%; height: 220px; object-fit: cover; }
+        .card-info { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-info h3 { margin: 0 0 10px 0; font-size: 18px; }
+
+        .btn-buy {
+            background: var(--accent); color: white; border: none; 
+            padding: 12px; border-radius: 12px; width: 100%; 
+            font-weight: 700; cursor: pointer; margin-top: auto;
+        }
+        .btn-buy:hover { background: #0052cc; transform: scale(1.02); }
+
+        /* CART PAGE */
+        #cartPage { position:fixed; inset:0; background:var(--bg); display:none; z-index:8000; padding:5% 10%; overflow-y:auto; }
+        .cart-item { background: white; padding: 20px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0;}
+
+        /* FOOTER */
+        footer { background: var(--dark); color: #fff; padding: 80px 5% 40px; margin-top: 60px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; max-width: 1400px; margin: 0 auto; }
+        
+        /* CHAT BTN */
+        .chat-btn {
+            position: fixed; bottom: 30px; right: 30px; 
+            background: var(--accent); color: white; padding: 15px 25px; 
+            border-radius: 50px; font-weight: 700; box-shadow: 0 10px 15px rgba(0, 102, 255, 0.3);
+            cursor: pointer; z-index: 5000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <div class="side-menu" id="sideMenu">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <h2 id="userNameLabel" style="margin:0;">Қонақ</h2>
+            <i class="fa fa-times" id="closeMenu" style="cursor:pointer; font-size: 24px;"></i>
+        </div>
+        <div class="menu-item" style="padding: 15px 0; border-bottom: 1px solid #f1f5f9; cursor: pointer;"
+     onclick="openMyTickets(); hideMenu();">
+    <i class="fa fa-ticket" style="margin-right: 10px; color: var(--accent);"></i> Менің билеттерім
+</div>
+        <div class="menu-item" onclick="openCartPage(); hideMenu();" style="padding: 15px 0; border-bottom: 1px solid #f1f5f9; cursor: pointer;"><i class="fa fa-shopping-cart" style="margin-right: 10px; color: var(--accent);"></i> Себет</div>
+        <div class="menu-item" id="logoutBtn" style="color: var(--danger); padding: 15px 0; display: none; cursor: pointer;" onclick="logout()"><i class="fa fa-right-from-bracket" style="margin-right: 10px;"></i> Шығу</div>
+    </div>
+
+    <header>
+        <div class="nav-main">
+            <a href="index.html" class="logo">EVENT<span>UM</span></a>
+            
+            <div class="search-container">
+                <i class="fa fa-search"></i>
+                <input type="text" id="findInput" placeholder="Шараларды іздеу..." oninput="searchEvents()">
+            </div>
+
+            <div class="header-actions">
+                <div class="city-select" id="cityBtn" onclick="changeCity()">
+                    <i class="fa-solid fa-location-dot"></i> <span id="currentCity">Алматы</span>
+                </div>
+                <i class="fa-regular fa-circle-user action-icon" id="userIcon"></i>
+                <i class="fa-solid fa-bars action-icon" id="burgerBtn"></i>
+            </div>
+        </div>
+        
+        <div class="nav-sub">
+            <div class="cat-item active" onclick="filter('all', this)">Барлық</div>
+            <div class="cat-item" onclick="filter('concert', this)">Концерттер</div>
+            <div class="cat-item" onclick="filter('cinema', this)">Кино</div>
+            <div class="cat-item" onclick="filter('theater', this)">Театр</div>
+            <div class="cat-item" onclick="filter('sport', this)">Спорт</div>
+        </div>
+    </header>
+
+    <main class="grid" id="mainGrid">
+        </main>
+
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal">
+            <h2 style="text-align:center; margin-bottom: 25px;">Кіру</h2>
+            <input type="text" id="uName" placeholder="Логин" style="width:100%; padding:14px; margin-bottom:15px; border-radius:12px; border:1.5px solid #eee; outline: none;">
+            <input type="password" id="uPass" placeholder="Пароль" style="width:100%; padding:14px; margin-bottom:25px; border-radius:12px; border:1.5px solid #eee; outline: none;">
+            <button onclick="login()" class="btn-buy">Кіру</button>
+            <button onclick="register()" 
+        style="width:100%; margin-top:10px; padding:12px; 
+        border-radius:12px; border:1.5px solid var(--accent); 
+        background:white; color:var(--accent); font-weight:700; cursor:pointer;">
+    Тіркелу
+</button>
+            <button onclick="closeLogin()" style="width:100%; background:none; border:none; margin-top:15px; cursor:pointer; color:var(--gray)">Жабу</button>
+        </div>
+    </div>
+
+    <div id="cartPage">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 30px;">
+                <h1>Себет</h1>
+                <button onclick="closeCartPage()" class="btn-buy" style="width:auto; padding:10px 25px; background: var(--dark);">Артқа</button>
+            </div>
+            <div id="cartContent"></div>
+            <div id="cartTotal" style="margin-top: 20px; font-size: 20px; font-weight: 800; text-align: right;"></div>
+            <button id="orderBtn" onclick="checkout()" class="btn-buy" style="margin-top:20px; font-size: 18px; display: none;">Тапсырыс беру</button>
+        </div>
+    </div>
+
+    <div class="chat-btn"><i class="fa-solid fa-comment-dots"></i> Көмек керек пе?</div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="logo" style="color: white; margin-bottom: 20px;">EVENT<span>UM</span></div>
+                <p style="opacity: 0.6; font-size: 14px;">Қазақстандағы ең ірі билет операторы. Бізбен бірге уақытыңызды қызықты өткізіңіз.</p>
+                <div style="display: flex; gap: 15px; font-size: 22px; margin-top: 20px;">
+                    <i class="fa-brands fa-instagram"></i> <i class="fa-brands fa-telegram"></i> <i class="fa-brands fa-tiktok"></i>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Анықтама</h4>
+                <ul>
+                    <li>Қайтару ережесі</li>
+                    <li>Төлем әдістері</li>
+                    <li>Көп қойылатын сұрақтар</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Байланыс</h4>
+                <p>+7 (777) 000 00 00</p>
+                <p>info@eventum.kz</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Шаралар тізімі (Database mock)
+        const events = [
+            { id: 1, title: "BIG CITY FEST 2026", cat: "concert", date: "25 Мамыр", loc: "Орталық Стадион", price: 12000, img: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500" },
+            { id: 2, title: "Аватар: Су жолы", cat: "cinema", date: "Күн сайын", loc: "Kinopark", price: 2500, img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500" },
+            { id: 3, title: "Абай-Тоғжан", cat: "theater", date: "12 Наурыз", loc: "Әуезов театры", price: 4000, img: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=500" },
+            { id: 4, title: "Барыс - Авангард", cat: "sport", date: "15 Наурыз", loc: "Барыс Арена", price: 3500, img: "https://images.unsplash.com/photo-1580748141549-71748ddf0bdc?w=500" },
+            { id: 5, title: "Jah Khalib Concert", cat: "concert", date: "1 Маусым", loc: "Almaty Arena", price: 15000, img: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?w=500" },
+            { id: 6, title: "Теннис: ATP Almaty", cat: "sport", date: "20 Сәуір", loc: "Daulet Center", price: 5000, img: "https://images.unsplash.com/photo-1595435064219-510e3a2209ae?w=500" }
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('eventum_cart')) || [];
+
+        // Шараларды шығару
+        function renderEvents(data) {
+            const grid = document.getElementById('mainGrid');
+            grid.innerHTML = data.map(ev => `
+                <div class="card" data-cat="${ev.cat}">
+                    <img src="${ev.img}" class="card-img">
+                    <div class="card-info">
+                        <h3>${ev.title}</h3>
+                        <div style="color: var(--gray); font-size: 13px; margin-bottom: 5px;">
+                            <i class="fa fa-calendar"></i> ${ev.date} • <i class="fa fa-location-dot"></i> ${ev.loc}
+                        </div>
+                        <div style="font-weight: 800; color: var(--accent); font-size: 18px; margin-bottom: 15px;">${ev.price.toLocaleString()} ₸</div>
+                        <button class="btn-buy" onclick="addToCart(${ev.id})">Билет алу</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Фильтр
+        function filter(cat, el) {
+            document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            const filtered = cat === 'all' ? events : events.filter(e => e.cat === cat);
+            renderEvents(filtered);
+        }
+
+        // Іздеу
+        function searchEvents() {
+            const query = document.getElementById('findInput').value.toLowerCase();
+            const filtered = events.filter(e => e.title.toLowerCase().includes(query));
+            renderEvents(filtered);
+        }
+
+        // Себетке қосу
+        function addToCart(id) {
+            const event = events.find(e => e.id === id);
+            cart.push(event);
+            localStorage.setItem('eventum_cart', JSON.stringify(cart));
+            alert(`${event.title} себетке қосылды!`);
+        }
+
+        // Себетті ашу
+        function openCartPage() {
+            document.getElementById('cartPage').style.display = 'block';
+            const content = document.getElementById('cartContent');
+            const totalEl = document.getElementById('cartTotal');
+            const orderBtn = document.getElementById('orderBtn');
+
+            if(cart.length === 0) {
+                content.innerHTML = "<h3 style='text-align:center; color:gray;'>Себет бос...</h3>";
+                totalEl.innerText = "";
+                orderBtn.style.display = 'none';
+            } else {
+                let total = cart.reduce((sum, item) => sum + item.price, 0);
+                content.innerHTML = cart.map((item, index) => `
+                    <div class="cart-item">
+                        <div>
+                            <div style="font-weight:800">${item.title}</div>
+                            <div style="font-size:12px; color:gray">${item.loc}</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:20px;">
+                            <b>${item.price.toLocaleString()} ₸</b>
+                            <i class="fa fa-trash" style="color:red; cursor:pointer" onclick="removeFromCart(${index})"></i>
+                        </div>
+                    </div>
+                `).join('');
+                totalEl.innerText = "Жалпы: " + total.toLocaleString() + " ₸";
+                orderBtn.style.display = 'block';
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('eventum_cart', JSON.stringify(cart));
+            openCartPage();
+        }
+
+        function checkout() {
+            alert("Тапсырысыңыз қабылданды! Билеттер почтаңызға жіберіледі.");
+            cart = [];
+            localStorage.removeItem('eventum_cart');
+            closeCartPage();
+        }
+
+        function closeCartPage() { document.getElementById('cartPage').style.display = 'none'; }
+
+        // Sidebar баскару
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        document.getElementById('burgerBtn').onclick = () => { sideMenu.classList.add('active'); menuOverlay.style.display = 'block'; checkAuth(); };
+        document.getElementById('closeMenu').onclick = hideMenu;
+        menuOverlay.onclick = hideMenu;
+        function hideMenu() { sideMenu.classList.remove('active'); menuOverlay.style.display = 'none'; }
+
+        // Авторизация
+        document.getElementById('userIcon').onclick = () => {
+            if(!localStorage.getItem("user")) document.getElementById('loginModal').style.display = 'flex';
+            else { sideMenu.classList.add('active'); menuOverlay.style.display = 'block'; }
+        };
+
+        async function login() {
+    let username = document.getElementById('uName').value;
+    let password = document.getElementById('uPass').value;
+
+    const res = await fetch("http://localhost/eventum/login.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if(data.status === "success"){
+        localStorage.setItem("user", data.username);
+        checkAuth();
+        closeLogin();
+    } else {
+        alert(data.message); // Қате пароль шығады
+    }
+}
+        async function register() {
+    let username = document.getElementById('uName').value;
+    let password = document.getElementById('uPass').value;
+
+    const res = await fetch("http://localhost/eventum/register.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+}
+
+        function checkAuth() {
+            let user = localStorage.getItem("user");
+            if(user) {
+                document.getElementById('userNameLabel').innerText = user;
+                document.getElementById('logoutBtn').style.display = 'flex';
+            }
+        }
+
+        function logout() { localStorage.removeItem("user"); location.reload(); }
+        function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
+
+        function changeCity() {
+            const cities = ["Алматы", "Астана", "Шымкент", "Ақтөбе"];
+            let current = document.getElementById('currentCity').innerText;
+            let next = cities[(cities.indexOf(current) + 1) % cities.length];
+            document.getElementById('currentCity').innerText = next;
+        }
+
+        window.onload = () => {
+            renderEvents(events);
+            checkAuth();
+        };
+        // Себеттен checkout серверге жіберу
+async function checkout() {
+    try {
+        let user = localStorage.getItem("user");
+
+        if(!user){
+            alert("Алдымен жүйеге кіріңіз!");
+            return;
+        }
+
+        if(!cart || cart.length === 0){
+            alert("Себет бос!");
+            return;
+        }
+
+        const res = await fetch("http://localhost/eventum/checkout.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: user,
+                tickets: cart
+            })
+        });
+
+        const data = await res.json();
+
+        if(data.status === "success"){
+            alert("Сатып алу сәтті! Билеттер почтаңызға жіберіледі.");
+            cart = [];
+            localStorage.removeItem('eventum_cart');
+            closeCartPage();
+        } else {
+            alert("Қате пайда болды: " + data.message);
+        }
+
+    } catch(error){
+        console.error("Checkout error:", error);
+        alert("Қате бар! F12 → Console қараңыз");
+    }
+}
+
+// Менің билеттерім батырмасы
+function openMyTickets() {
+    let user = localStorage.getItem("user");
+    if(!user){
+        alert("Алдымен жүйеге кіріңіз!");
+        return;
+    }
+
+    // fetch билеттерді серверден алу
+    fetch("http://localhost/eventum/mytickets.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: user })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === "success" && data.tickets.length > 0){
+            let content = data.tickets.map(ticket => `
+                <div class="cart-item">
+                    <div>
+                        <div style="font-weight:800">${ticket.title}</div>
+                        <div style="font-size:12px; color:gray">${ticket.loc}</div>
+                    </div>
+                    <div><b>${ticket.price.toLocaleString()} ₸</b></div>
+                </div>
+            `).join('');
+            document.getElementById('cartContent').innerHTML = content;
+            document.getElementById('cartTotal').innerText = "Барлығы: " + data.tickets.reduce((sum,t)=>sum+t.price,0).toLocaleString() + " ₸";
+            document.getElementById('orderBtn').style.display = "none";
+            document.getElementById('cartPage').style.display = 'block';
+        } else {
+            alert("Сізде билеттер жоқ");
+        }
+    })
+    .catch(err => { console.error(err); alert("Қате пайда болды"); });
+}
+    </script>
+</body>
+</html>
